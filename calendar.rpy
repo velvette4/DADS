@@ -9,10 +9,7 @@
         jump activity
 
 label activity:
-    $ inventory_string = get_inventory_string()
-    # Add an item
-    $ add_item("blood lotus", 2)
-    $ add_item("elfroot", 3)
+    $ inventory = {"blood lotus": 2}
     "what do you want to do?"
     menu gardening_choice:
         "plant":
@@ -24,3 +21,6 @@ label activity:
             $ calendar.next_day()
             $ watered = False
             jump show_date
+
+label farming_start:
+    call screen farming

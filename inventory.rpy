@@ -1,35 +1,32 @@
-﻿# Seed selection buttons
-screen inventory:
+﻿screen seeds_inventory():
+    tag menu
+    add "images/seeds_inventory_bg.png"  # Optional background for seed inventory
+
     vbox:
-        # Debugging: Output the inventory count for each item
-        text "Inventory count: cheese = [inventory.count('cheese')], elfroot = [inventory.count('elfroot')], royal elfroot = [inventory.count('royal elfroot')], blood lotus = [inventory.count('blood lotus')]"
-        
-        # Define a list of available seeds and their corresponding images
-        $ seeds = [
-            ("cheese", "images/seeds/cheese_seeds.png", "images/seeds/cheese_seeds_hover.png"),
-            ("elfroot", "images/seeds/elfroot_seeds.png", "images/seeds/elfroot_seeds_hover.png"),
-            ("royal elfroot", "images/seeds/royal_elfroot_seeds.png", "images/seeds/royal_elfroot_seeds_hover.png"),
-            ("blood lotus", "images/seeds/blood_lotus_seeds.png", "images/seeds/blood_lotus_seeds_hover.png")
-        ]
+        spacing 10
+        xalign 0.5
+        yalign 0.5
 
-        # Iterate through the seeds and display a button if the seed is available in the inventory
-        for seed, idle_img, hover_img in seeds:
-            if inventory.count(seed) > 0:
-                imagebutton:
-                    idle idle_img
-                    hover hover_img
-                    action [
-                        SetVariable("current_seed", seed),
-                        Hide("inventory"),
-                        ToggleVariable("planting_mode"),
-                    ]  # Set planting mode to selected seed
+        # Show available seeds
+        for item_name, quantity in inventory.items():
+            if quantity > 0:  # Filter for seeds
+                hbox:
+                    spacing 10
+                    text f"{item_name}: {quantity}"  # Display seed name and quantity
 
-        textbutton "Close Inventory" action Hide("inventory")
+                    # Select button
+                    textbutton "Select":
+                        action [
+                            SetVariable("current_seed", item_name),
+                            SetVariable("planting_mode", True),
+                            Hide("seeds_inventory")
+                        ]
+                        # Tooltip or indicator
+                        hovered Notify(f"Selected {item_name} for planting.")
 
-
-screen getseeds:
-    textbutton "Get Seeds":
+    # Close button
+    textbutton "Cancel":
         action[
-            Function(inventory.add_item, ("blood lotus", 3)),
-            Function(inventory.add_item, ("elfroot", 3)),
+            Hide("seeds_inventory"),
+            Show("farming"),
         ]

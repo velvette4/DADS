@@ -173,10 +173,14 @@ init python:
 
 screen money_display():
     frame:
-        align (0.95, 0.05)  # Position it in the top-right corner
-        padding (10, 10)  # Correct padding as a tuple (left, top)
+        align (1, 1)  # Position the UI (top-left corner)
         background "#0008"  # Semi-transparent background
-        text "Money: $[player_money]" size 22 color "#FFFFFF"
+        padding (10, 10)  # Correct padding as a tuple (left, top)
+        vbox:
+            spacing 5
+            text "Money: $[player_money]" xalign 0.5 yalign 0.1  # Position at the top center
+            for item_name, quantity in inventory.items():
+                text f"{item_name}: {quantity}" xalign 0.5 yalign 0.2
 
 screen calendar_ui():
     frame:
@@ -191,36 +195,23 @@ screen calendar_ui():
                 text "Event: Spring Festival 🎉" color "#ff0" size 18
 
 # Function to add items to the inventory
-default inventory = []
+# Define the inventory as a global dictionary
+default inventory = {}
 
 init python:
+# Add item function
     def add_item(item_name, quantity):
-        """Adds an item to the inventory."""
-        # Check if the item already exists
-        for item in inventory:
-            if item["name"] == item_name:
-                item["quantity"] += quantity
-                return
-        # If item doesn't exist, add it to the inventory
-        inventory.append({"name": item_name, "quantity": quantity})
+        if item_name in inventory:
+            inventory[item_name] += quantity
+        else:
+            inventory[item_name] = quantity
 
+    # Remove item function
     def remove_item(item_name, quantity):
-        """Removes an item from the inventory."""
-        for item in inventory:
-            if item["name"] == item_name:
-                item["quantity"] -= quantity
-                # Remove item if quantity is 0 or less
-                if item["quantity"] <= 0:
-                    inventory.remove(item)
-                return
-
-init python:
-    def get_inventory_string():
-        """Returns a string representation of the inventory."""
-        if not inventory:
-            return "Your inventory is empty."
-        return ", ".join([f"{item['name']} x{item['quantity']}" for item in inventory])
-
+        if item_name in inventory:
+            inventory[item_name] -= quantity
+            if inventory[item_name] <= 0:
+                del inventory[item_name]
 
 
 
@@ -254,10 +245,8 @@ init python:
 label start:
     show screen money_display
     show screen calendar_ui
+    "checking"
+    "checking again"
     $ player_name = renpy.input("What is your name?")
     $ player_name = player_name.strip()
     jump show_date
-    
-
-    # Return to the main menu
-    return

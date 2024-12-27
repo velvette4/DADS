@@ -2,8 +2,8 @@
     add "farm"  # Background image for the farm
     textbutton "Get Seeds":
         action[
-            Function(inventory.add_item, ("blood lotus", 3)),
-            Function(inventory.add_item, ("elfroot", 3)),
+            Function(add_item, "blood lotus", 3),
+            Function(add_item, "elfroot", 3),
         ]
     textbutton "Exit Farm" xpos 1500 ypos 50 action Jump("show_date")
 
@@ -21,11 +21,11 @@
         text "Harvest Mode: OFF" color "#9b1b30" xpos 500 ypos 100
 
     # Inventory button
-    textbutton "Inventory" xpos 0.5 ypos 50 action Show("inventory")
+    textbutton "Inventory" xpos 0.5 ypos 50 action Show("seeds_inventory")
 
     # Row 1 (Tile 1)
     imagebutton:
-        # Check the current state of the tile and show appropriate image
+        # Check the current state and show appropriate image
         if a1_planted and a1watered and a1_plant_state == required_growth(a1_planted):  # Harvestable
             idle "images/harvestable/a1_harvestable.png"  # Display harvestable image
         elif a1_planted and a1watered:  # If both planted and watered
@@ -38,21 +38,23 @@
             idle "images/idle/a1_idle.png"  # Default idle image (empty)
 
         hover "images/hover/a1_hover.png"  # Hover image
-
         xpos 203
         ypos 238
 
-        # Define the action when clicking the tile
         action [
             # Planting logic
             If(
                 planting_mode,  # If planting mode is active
                 [
-                    SetVariable("a1_planted", current_seed),  # Set the planted seed (replace with actual plant name)
+                    SetVariable("a1_planted", current_seed),  # Set the planted seed
                     SetVariable("a1_plant_state", 0),  # Reset plant state
                     SetVariable("a1watered", False),  # Reset watered state
-                    ToggleVariable("planting_mode"),  # Turn off planting mode after planting
-                    Function(inventory.remove, current_seed),
+                    Function(lambda: (
+                        inventory.pop(current_seed) if inventory[current_seed] == 1 
+                        else inventory.update({current_seed: inventory[current_seed] - 1}),
+                        setattr(store, "current_seed", None) if inventory.get(current_seed, 0) == 0 else None,
+                        setattr(store, "planting_mode", False) if inventory.get(current_seed, 0) == 0 else None
+                    ))
                 ]
             ),
             
@@ -61,7 +63,7 @@
                 watering_mode and a1_planted and a1_plant_state < required_growth(a1_planted),  # Only if plant is not fully grown
                 [
                     SetVariable("a1watered", True),  # Water the tile
-                    SetVariable("a1_plant_state", a1_plant_state + 1),  # Increase plant state without using min
+                    SetVariable("a1_plant_state", a1_plant_state + 1),  # Increase plant state
                 ]
             ),
             
@@ -72,27 +74,28 @@
                     If(
                         a1_plant_state >= required_growth(a1_planted),  # Only harvest if plant is fully grown
                         [
-                            Function(inventory.append, a1_planted),  # Add the plant to the inventory
+                            Function(lambda: inventory.update({a1_planted: inventory.get(a1_planted, 0) + 2})),  # Add the plant to the inventory
                             SetVariable("a1_planted", None),  # Reset planted state
                             SetVariable("a1_plant_state", 0),  # Reset plant state
                             SetVariable("a1watered", False),  # Reset watered state
-                        ],
-                        ##renpy.notify("This plot is not ready to harvest!")  # Notify if not ready
-                    )
+                        ]
+                    ),
                 ]
             ),
             
-            # After all actions are performed, show the farming screen
-            Show("farming")
+            # Only show the farming screen if any change occurred
+            If(
+                planting_mode or watering_mode or harvest_mode,  # Check if any mode was active and performed an action
+                Jump("farming_start")  # Show farming screen after actions
+            ),
         ]
 
-
-
     imagebutton:
+        # Check the current state and show appropriate image for b1
         if b1_planted and b1watered and b1_plant_state == required_growth(b1_planted):  # Harvestable
             idle "images/harvestable/a1_harvestable.png"  # Display harvestable image
         elif b1_planted and b1watered:  # If both planted and watered
-            idle "images/watered/plantedwatered.png"  # Display planted + watered image
+            idle "images/watered/plantedwatered.png"  # Display planted + watered images
         elif b1watered:  # If the tile is watered but not planted
             idle "images/watered/a1_watered.png"  # Display watered image
         elif b1_planted:  # If the tile is planted but not watered
@@ -103,48 +106,59 @@
         hover "images/hover/a1_hover.png"
         xpos 439
         ypos 238
+
         action [
-            # Planting logic
+            # Planting logic for b1
             If(
                 planting_mode,  # If planting mode is active
                 [
                     SetVariable("b1_planted", current_seed),  # Set the planted seed (replace with actual plant name)
                     SetVariable("b1_plant_state", 0),  # Reset plant state
                     SetVariable("b1watered", False),  # Reset watered state
-                    ToggleVariable("planting_mode"),  # Turn off planting mode after planting
-                    Function(inventory.remove, current_seed),
+                    Function(lambda: (
+                        inventory.pop(current_seed) if inventory[current_seed] == 1 
+                        else inventory.update({current_seed: inventory[current_seed] - 1}),
+                        setattr(store, "current_seed", None) if inventory.get(current_seed, 0) == 0 else None,
+                        setattr(store, "planting_mode", False) if inventory.get(current_seed, 0) == 0 else None
+                    ))
                 ]
             ),
             
-            # Watering logic
+            # Watering logic for b1
             If(
                 watering_mode and b1_planted and b1_plant_state < required_growth(b1_planted),  # Only if plant is not fully grown
                 [
                     SetVariable("b1watered", True),  # Water the tile
-                    SetVariable("b1_plant_state", b1_plant_state + 1),  # Increase plant state without using min
+                    SetVariable("b1_plant_state", b1_plant_state + 1),  # Increase plant state
                 ]
             ),
             
-            # Harvesting logic
+            # Harvesting logic for b1
             If(
                 harvest_mode and b1_planted,  # If harvest mode is active and the plot is planted
                 [
                     If(
                         b1_plant_state >= required_growth(b1_planted),  # Only harvest if plant is fully grown
                         [
-                            Function(inventory.append, b1_planted),  # Add the plant to the inventory
+                            Function(lambda: inventory.update({b1_planted: inventory.get(b1_planted, 0) + 1})),  # Add the plant to the inventory
                             SetVariable("b1_planted", None),  # Reset planted state
                             SetVariable("b1_plant_state", 0),  # Reset plant state
                             SetVariable("b1watered", False),  # Reset watered state
-                        ],
-                        ##renpy.notify("This plot is not ready to harvest!")  # Notify if not ready
-                    )
+                        ]
+                    ),
                 ]
             ),
             
-            # After all actions are performed, show the farming screen
-            Show("farming")
+            # Only show the farming screen if any change occurred
+            If(
+                planting_mode or watering_mode or harvest_mode,  # Check if any mode was active and performed an action
+                Jump("farming_start")  # Show farming screen after actions
+            ),
         ]
+
+
+
+            
 
     imagebutton:
         if c1_planted and c1watered and c1_plant_state == required_growth(c1_planted):  # Harvestable
@@ -169,8 +183,8 @@
                     SetVariable("c1_planted", current_seed),  # Set the planted seed (replace with actual plant name)
                     SetVariable("c1_plant_state", 0),  # Reset plant state
                     SetVariable("c1watered", False),  # Reset watered state
-                    ToggleVariable("planting_mode"),  # Turn off planting mode after planting
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),  # Turn off planting mode after planting
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             
@@ -190,7 +204,7 @@
                     If(
                         c1_plant_state >= required_growth(c1_planted),  # Only harvest if plant is fully grown
                         [
-                            Function(inventory.append, c1_planted),  # Add the plant to the inventory
+                            Function(lambda: inventory.update({c1_planted: inventory.get(c1_planted, 0) + 1})),  # Add the plant to the inventory
                             SetVariable("c1_planted", None),  # Reset planted state
                             SetVariable("c1_plant_state", 0),  # Reset plant state
                             SetVariable("c1watered", False),  # Reset watered state
@@ -201,7 +215,7 @@
             ),
             
             # After all actions are performed, show the farming screen
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -227,8 +241,8 @@
                     SetVariable("d1_planted", current_seed),  # Set the planted seed (replace with actual plant name)
                     SetVariable("d1_plant_state", 0),  # Reset plant state
                     SetVariable("d1watered", False),  # Reset watered state
-                    ToggleVariable("planting_mode"),  # Turn off planting mode after planting
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),  # Turn off planting mode after planting
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             
@@ -248,7 +262,7 @@
                     If(
                         d1_plant_state >= required_growth(d1_planted),  # Only harvest if plant is fully grown
                         [
-                            Function(inventory.append, d1_planted),  # Add the plant to the inventory
+                            Function(lambda: inventory.update({d1_planted: inventory.get(d1_planted, 0) + 1})),  # Add the plant to the inventory
                             SetVariable("d1_planted", None),  # Reset planted state
                             SetVariable("d1_plant_state", 0),  # Reset plant state
                             SetVariable("d1watered", False),  # Reset watered state
@@ -257,7 +271,7 @@
                 ]
             ),
             # After all actions, show the farming screen
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -283,8 +297,8 @@
                     SetVariable("e1_planted", current_seed),  # Set the planted seed
                     SetVariable("e1_plant_state", 0),  # Reset plant state
                     SetVariable("e1watered", False),  # Reset watered state
-                    ToggleVariable("planting_mode"),  # Turn off planting mode after planting
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),  # Turn off planting mode after planting
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
 
@@ -304,7 +318,7 @@
                     If(
                         e1_plant_state >= required_growth(e1_planted),  # Only harvest if plant is fully grown
                         [
-                            Function(inventory.append, e1_planted),  # Add the plant to the inventory
+                            Function(lambda: inventory.update({e1_planted: inventory.get(e1_planted, 0) + 1})),  # Add the plant to the inventory
                             SetVariable("e1_planted", None),  # Reset planted state
                             SetVariable("e1_plant_state", 0),  # Reset plant state
                             SetVariable("e1watered", False),  # Reset watered state
@@ -313,7 +327,7 @@
                 ]
             ),
             # After all actions, show the farming screen
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -339,8 +353,8 @@
                     SetVariable("f1_planted", current_seed),  # Set the planted seed
                     SetVariable("f1_plant_state", 0),  # Reset plant state
                     SetVariable("f1watered", False),  # Reset watered state
-                    ToggleVariable("planting_mode"),  # Turn off planting mode after planting
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),  # Turn off planting mode after planting
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
 
@@ -360,7 +374,7 @@
                     If(
                         f1_plant_state >= required_growth(f1_planted),  # Only harvest if plant is fully grown
                         [
-                            Function(inventory.append, f1_planted),  # Add the plant to the inventory
+                            Function(lambda: inventory.update({f1_planted: inventory.get(f1_planted, 0) + 1})),  # Add the plant to the inventory
                             SetVariable("f1_planted", None),  # Reset planted state
                             SetVariable("f1_plant_state", 0),  # Reset plant state
                             SetVariable("f1watered", False),  # Reset watered state
@@ -369,7 +383,7 @@
                 ]
             ),
             # After all actions, show the farming screen
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     # Row 2
@@ -395,8 +409,8 @@
                     SetVariable("a2_planted", current_seed),
                     SetVariable("a2_plant_state", 0),
                     SetVariable("a2watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -412,7 +426,7 @@
                     If(
                         a2_plant_state >= required_growth(a2_planted),
                         [
-                            Function(inventory.append, a2_planted),
+                            Function(lambda: inventory.update({a2_planted: inventory.get(a2_planted, 0) + 1})),
                             SetVariable("a2_planted", None),
                             SetVariable("a2_plant_state", 0),
                             SetVariable("a2watered", False),
@@ -420,7 +434,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -445,8 +459,8 @@
                     SetVariable("b2_planted", current_seed),
                     SetVariable("b2_plant_state", 0),
                     SetVariable("b2watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -462,7 +476,7 @@
                     If(
                         b2_plant_state >= required_growth(b2_planted),
                         [
-                            Function(inventory.append, b2_planted),
+                            Function(lambda: inventory.update({b2_planted: inventory.get(b2_planted, 0) + 1})),
                             SetVariable("b2_planted", None),
                             SetVariable("b2_plant_state", 0),
                             SetVariable("b2watered", False),
@@ -470,7 +484,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -495,8 +509,8 @@
                     SetVariable("c2_planted", current_seed),
                     SetVariable("c2_plant_state", 0),
                     SetVariable("c2watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -512,7 +526,7 @@
                     If(
                         c2_plant_state >= required_growth(c2_planted),
                         [
-                            Function(inventory.append, c2_planted),
+                            Function(lambda: inventory.update({c2_planted: inventory.get(c2_planted, 0) + 1})),
                             SetVariable("c2_planted", None),
                             SetVariable("c2_plant_state", 0),
                             SetVariable("c2watered", False),
@@ -520,7 +534,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -545,8 +559,8 @@
                     SetVariable("d2_planted", current_seed),
                     SetVariable("d2_plant_state", 0),
                     SetVariable("d2watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -562,7 +576,7 @@
                     If(
                         d2_plant_state >= required_growth(d2_planted),
                         [
-                            Function(inventory.append, d2_planted),
+                            Function(lambda: inventory.update({d2_planted: inventory.get(d2_planted, 0) + 1})),
                             SetVariable("d2_planted", None),
                             SetVariable("d2_plant_state", 0),
                             SetVariable("d2watered", False),
@@ -570,7 +584,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -595,8 +609,8 @@
                     SetVariable("e2_planted", current_seed),
                     SetVariable("e2_plant_state", 0),
                     SetVariable("e2watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -612,7 +626,7 @@
                     If(
                         e2_plant_state >= required_growth(e2_planted),
                         [
-                            Function(inventory.append, e2_planted),
+                            Function(lambda: inventory.update({e2_planted: inventory.get(e2_planted, 0) + 1})),
                             SetVariable("e2_planted", None),
                             SetVariable("e2_plant_state", 0),
                             SetVariable("e2watered", False),
@@ -620,7 +634,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -645,8 +659,8 @@
                     SetVariable("f2_planted", current_seed),
                     SetVariable("f2_plant_state", 0),
                     SetVariable("f2watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -662,7 +676,7 @@
                     If(
                         f2_plant_state >= required_growth(f2_planted),
                         [
-                            Function(inventory.append, f2_planted),
+                            Function(lambda: inventory.update({f2_planted: inventory.get(f2_planted, 0) + 1})),
                             SetVariable("f2_planted", None),
                             SetVariable("f2_plant_state", 0),
                             SetVariable("f2watered", False),
@@ -670,7 +684,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
 
@@ -697,8 +711,8 @@
                     SetVariable("a3_planted", current_seed),
                     SetVariable("a3_plant_state", 0),
                     SetVariable("a3watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -714,7 +728,7 @@
                     If(
                         a3_plant_state >= required_growth(a3_planted),
                         [
-                            Function(inventory.append, a3_planted),
+                            Function(lambda: inventory.update({a3_planted: inventory.get(a3_planted, 0) + 1})),
                             SetVariable("a3_planted", None),
                             SetVariable("a3_plant_state", 0),
                             SetVariable("a3watered", False),
@@ -722,7 +736,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -747,8 +761,8 @@
                     SetVariable("b3_planted", current_seed),
                     SetVariable("b3_plant_state", 0),
                     SetVariable("b3watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -779,7 +793,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -804,8 +818,8 @@
                     SetVariable("c3_planted", current_seed),
                     SetVariable("c3_plant_state", 0),
                     SetVariable("c3watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -821,7 +835,7 @@
                     If(
                         c3_plant_state >= required_growth(c3_planted),
                         [
-                            Function(inventory.append, c3_planted),
+                            Function(lambda: inventory.update({c3_planted: inventory.get(c3_planted, 0) + 1})),
                             SetVariable("c3_planted", None),
                             SetVariable("c3_plant_state", 0),
                             SetVariable("c3watered", False),
@@ -829,7 +843,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -854,8 +868,8 @@
                     SetVariable("d3_planted", current_seed),
                     SetVariable("d3_plant_state", 0),
                     SetVariable("d3watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -871,7 +885,7 @@
                     If(
                         d3_plant_state >= required_growth(d3_planted),
                         [
-                            Function(inventory.append, d3_planted),
+                            Function(lambda: inventory.update({d3_planted: inventory.get(d3_planted, 0) + 1})),
                             SetVariable("d3_planted", None),
                             SetVariable("d3_plant_state", 0),
                             SetVariable("d3watered", False),
@@ -879,7 +893,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -904,8 +918,8 @@
                     SetVariable("e3_planted", current_seed),
                     SetVariable("e3_plant_state", 0),
                     SetVariable("e3watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -921,7 +935,7 @@
                     If(
                         e3_plant_state >= required_growth(e3_planted),
                         [
-                            Function(inventory.append, e3_planted),
+                            Function(lambda: inventory.update({e3_planted: inventory.get(e3_planted, 0) + 1})),
                             SetVariable("e3_planted", None),
                             SetVariable("e3_plant_state", 0),
                             SetVariable("e3watered", False),
@@ -929,7 +943,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
     imagebutton:
@@ -954,8 +968,8 @@
                     SetVariable("f3_planted", current_seed),
                     SetVariable("f3_plant_state", 0),
                     SetVariable("f3watered", False),
-                    ToggleVariable("planting_mode"),
-                    Function(inventory.remove, current_seed),
+                    #toggleVariable("planting_mode"),
+                    Function(lambda: (inventory.pop(current_seed) if inventory[current_seed] == 1 else inventory.update({current_seed: inventory[current_seed] - 1})))
                 ]
             ),
             If(
@@ -971,7 +985,7 @@
                     If(
                         f3_plant_state >= required_growth(f3_planted),
                         [
-                            Function(inventory.append, f3_planted),
+                            Function(lambda: inventory.update({f3_planted: inventory.get(f3_planted, 0) + 1})),
                             SetVariable("f3_planted", None),
                             SetVariable("f3_plant_state", 0),
                             SetVariable("f3watered", False),
@@ -979,7 +993,7 @@
                     ),
                 ]
             ),
-            Show("farming")
+            #Jump("farming_start")
         ]
 
 
