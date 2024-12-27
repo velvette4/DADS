@@ -9,7 +9,7 @@
         jump activity
 
 label activity:
-    $ inventory = {"blood lotus": 2}
+    #$ inventory = {"blood lotus": 2} use this to set the number of seeds
     "what do you want to do?"
     menu gardening_choice:
         "plant":
