@@ -2,12 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/inventory.rpy", line 32: Line is indented, but the preceding textbutton statement does not expect a block. Please check this line's indentation. You may have forgotten a colon (:).
-    action[
-    ^
-                Function(inventory.add_item, ("blood lotus", 3)),
-                Function(inventory.add_item, ("elfroot", 3)),
-            ]
+File "game/inventory.rpy", line 27: expected ':' not found.
+    else quantity > 0 and item_name == "fertilizer":
+         ^
 
 Ren'Py Version: Ren'Py 8.3.4.24120703
-Fri Dec 27 12:03:18 2024
+Sat Dec 28 22:19:27 2024

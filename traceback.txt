@@ -1,70 +1,80 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
-While running game code:
-  File "game/calendar.rpy", line 19, in script
-    call screen farming
-  File "renpy/common/000statements.rpy", line 671, in execute_call_screen
-    store._return = renpy.call_screen(name, *args, **kwargs)
-  File "game/farming.rpy", line 1, in execute
-    screen farming():
-  File "game/farming.rpy", line 1, in execute
-    screen farming():
-  File "game/farming.rpy", line 3, in execute
-    textbutton "Get Seeds":
-  File "game/farming.rpy", line 3, in keywords
-    textbutton "Get Seeds":
-  File "game/farming.rpy", line 5, in <module>
-    Function(inventory.add_item, ("blood lotus", 3)),
-AttributeError: 'RevertableList' object has no attribute 'add_item'
+After initialization, but before game start.
+  File "game/inventory.rpy", line 1, in prepare_screen
+    screen seeds_inventory():
+  File "game/inventory.rpy", line 1, in prepare
+    screen seeds_inventory():
+  File "game/inventory.rpy", line 5, in prepare
+    vbox:
+  File "game/inventory.rpy", line 5, in prepare
+    vbox:
+  File "game/inventory.rpy", line 11, in prepare
+    for item_name, quantity in inventory.items():
+  File "game/inventory.rpy", line 11, in prepare
+    for item_name, quantity in inventory.items():
+  File "game/inventory.rpy", line 12, in prepare
+    if quantity > 0 and not item_name == "fertilizer":  # Filter for seeds
+  File "game/inventory.rpy", line 27, in prepare
+    elif quantity > 0 and item_name == "fertilizer":
+  File "game/inventory.rpy", line 28, in prepare
+    hbox:
+  File "game/inventory.rpy", line 28, in prepare
+    hbox:
+  File "game/inventory.rpy", line 33, in prepare
+    textbutton "Select":
+  File "game/inventory.rpy", line 33, in prepare
+    textbutton "Select":
+SyntaxError: invalid syntax (game/inventory.rpy, line 36)
 
 -- Full Traceback ------------------------------------------------------------
 
 Full traceback:
-  File "game/calendar.rpy", line 19, in script
-    call screen farming
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\ast.py", line 1980, in execute
-    self.call("execute")
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\ast.py", line 1959, in call
-    return renpy.statements.call(method, parsed, *args, **kwargs)
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\statements.py", line 374, in call
-    return method(parsed, *args, **kwargs)
-  File "renpy/common/000statements.rpy", line 671, in execute_call_screen
-    store._return = renpy.call_screen(name, *args, **kwargs)
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\exports\statementexports.py", line 345, in call_screen
-    rv = renpy.ui.interact(mouse="screen", type="screen", roll_forward=roll_forward)
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\ui.py", line 301, in interact
-    rv = renpy.game.interface.interact(roll_forward=roll_forward, **kwargs)
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\display\core.py", line 2215, in interact
-    repeat, rv = self.interact_core(preloads=preloads, trans_pause=trans_pause, pause=pause, pause_start=pause_start, pause_modal=pause_modal, **kwargs) # type: ignore
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\display\core.py", line 2745, in interact_core
-    root_widget.visit_all(lambda d : d.per_interact())
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\display\displayable.py", line 434, in visit_all
-    d.visit_all(callback, seen)
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\display\displayable.py", line 434, in visit_all
-    d.visit_all(callback, seen)
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\display\displayable.py", line 434, in visit_all
-    d.visit_all(callback, seen)
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\display\screen.py", line 480, in visit_all
-    callback(self)
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\display\core.py", line 2745, in <lambda>
-    root_widget.visit_all(lambda d : d.per_interact())
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\display\screen.py", line 491, in per_interact
-    self.update()
-  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\display\screen.py", line 697, in update
-    self.screen.function(**self.scope)
-  File "game/farming.rpy", line 1, in execute
-    screen farming():
-  File "game/farming.rpy", line 1, in execute
-    screen farming():
-  File "game/farming.rpy", line 3, in execute
-    textbutton "Get Seeds":
-  File "game/farming.rpy", line 3, in keywords
-    textbutton "Get Seeds":
-  File "game/farming.rpy", line 5, in <module>
-    Function(inventory.add_item, ("blood lotus", 3)),
-AttributeError: 'RevertableList' object has no attribute 'add_item'
+  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\bootstrap.py", line 359, in bootstrap
+    renpy.main.main()
+  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\main.py", line 652, in main
+    run(restart)
+  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\main.py", line 94, in run
+    renpy.display.screen.prepare_screens()
+  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\display\screen.py", line 1024, in prepare_screens
+    s.ast.prepare_screen()
+  File "game/inventory.rpy", line 1, in prepare_screen
+    screen seeds_inventory():
+  File "game/inventory.rpy", line 1, in prepare
+    screen seeds_inventory():
+  File "game/inventory.rpy", line 5, in prepare
+    vbox:
+  File "game/inventory.rpy", line 5, in prepare
+    vbox:
+  File "game/inventory.rpy", line 11, in prepare
+    for item_name, quantity in inventory.items():
+  File "game/inventory.rpy", line 11, in prepare
+    for item_name, quantity in inventory.items():
+  File "game/inventory.rpy", line 12, in prepare
+    if quantity > 0 and not item_name == "fertilizer":  # Filter for seeds
+  File "game/inventory.rpy", line 27, in prepare
+    elif quantity > 0 and item_name == "fertilizer":
+  File "game/inventory.rpy", line 28, in prepare
+    hbox:
+  File "game/inventory.rpy", line 28, in prepare
+    hbox:
+  File "game/inventory.rpy", line 33, in prepare
+    textbutton "Select":
+  File "game/inventory.rpy", line 33, in prepare
+    textbutton "Select":
+  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\py3analysis.py", line 803, in ast_eval
+    return self.ast_eval_literal(expr)[0]
+  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\py3analysis.py", line 785, in ast_eval_literal
+    expr = py_compile(expr, 'eval', ast_node=True)
+  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\python.py", line 1144, in py_compile
+    raise e
+  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\python.py", line 1081, in py_compile
+    raise orig_e
+  File "C:\Users\trian\Downloads\renpy-8.3.4-sdk\renpy\python.py", line 1073, in py_compile
+    tree = compile(source, filename, py_mode, ast.PyCF_ONLY_AST | flags, 1)
+SyntaxError: invalid syntax (game/inventory.rpy, line 36)
 
 Windows-10-10.0.22631 AMD64
 Ren'Py 8.3.4.24120703
 Dragon Age Dating Sim 1.0
-Fri Dec 27 12:04:08 2024
+Sun Dec 29 08:40:41 2024
