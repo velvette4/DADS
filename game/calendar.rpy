@@ -9,6 +9,7 @@
         jump activity
 
 label activity:
+    scene black with fade
     #$ inventory = {"blood lotus": 2} use this to set the number of seeds
     "what do you want to do?"
     menu gardening_choice:
@@ -16,10 +17,10 @@ label activity:
             call screen farming
 
         "Go to Bartrand's Books":
-            jump varricm1_1
+            jump varricd
             
-        "sell":
-            jump sell_menu
+        #"sell":
+            #jump shop_menu
         "go to sleep":
             $ calendar.next_day()
             $ a1watered = False
@@ -41,6 +42,31 @@ label activity:
             $ f2watered = False
             $ f3watered = False
             jump show_date
+        "Give me hawk feather":
+            python:
+                add_gift("Hawk Feather", 1)
+            $ hawkfeather = True
+            "Ok lol i gave u the hawk feather"
+            jump show_date
 
 label farming_start:
     call screen farming
+
+label varricd:
+    if giftinventory.get("Hawk Feather", 0) >= 1 and varricm1:
+        jump varricf1_1
+    elif varricm1:
+        $ random_dialogue = renpy.random.randint(1, 3)
+        scene bb
+        show varric
+        if random_dialogue == 1:
+            v "Good to see you again, Sprout."
+        elif random_dialogue == 2:
+            v "Haven't had enough of me yet, Sprout?"
+        else:
+            v "I've been staring at this blank page for an hour. Think I need to pick up a new profession..."
+        jump show_date
+    else:
+        jump varricm1_1
+
+

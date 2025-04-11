@@ -32,7 +32,7 @@
                     # Select button
                     textbutton "Select":
                         action [
-                            SetVariable("current_seed", item_name),
+                            SetVariable("current_fertilizer", item_name),
                             SetVariable("fertilizer_mode", True),
                             Hide("seeds_inventory")
                         ]
